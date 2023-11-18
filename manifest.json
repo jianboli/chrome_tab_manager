@@ -4,7 +4,9 @@
   "version": "1.0",
   "description": "Manage your tabs with ease.",
   "permissions": [
-    "tabs"
+    "tabs",
+    "tabGroups",
+    "windows"
   ],
   "action": {
     "default_popup": "popup.html",

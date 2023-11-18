@@ -11,8 +11,10 @@ Click on the extension icon in the Chrome toolbar to see your popup. You can cli
 
 TODO:
 
-* [ ] make the tab item clickable: currently, this function is coded but it does not work
+* [X] make the tab item clickable: currently, this function is coded but it does not work
 * [ ] make the tab group and window name more readable
+  * [X] Make the tab group name more readable
+  * [ ] The window name is currently not supported, please follow this thread for more detail: [Issue 1190160: Programmatic access to window-name from chrome.windows extension API](https://bugs.chromium.org/p/chromium/issues/detail?id=1190160)
 * [ ] label/highlight duplicated tabs
 * [ ] move tabs around within the tool
 * [ ] a global short-cut key
