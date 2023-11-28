@@ -116,12 +116,8 @@ function popup() {
 }
 
 document.getElementById('refreshBtn').addEventListener('click', function() {
-    chrome.tabs.query({}, function(tabs) {
-      tabs.forEach(function(tab) {
-        document.getElementById('tabList').innerHTML = '';
-        popup();
-      });
-    });
+    document.getElementById('tabList').innerHTML = '';
+    popup();
   });
   
 
