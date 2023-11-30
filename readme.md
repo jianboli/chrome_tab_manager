@@ -12,15 +12,16 @@ Click on the extension icon in the Chrome toolbar to see your popup. You can cli
 TODO:
 
 * [X] make the tab item clickable: currently, this function is coded but it does not work
-* [ ] make the tab group and window name more readable
+* [X] make the tab group and window name more readable
   * [X] Make the tab group name more readable
-  * [ ] The window name is currently not supported, please follow this thread for more detail: [Issue 1190160: Programmatic access to window-name from chrome.windows extension API](https://bugs.chromium.org/p/chromium/issues/detail?id=1190160)
+  * [ ] ~~The window name is currently not supported, please follow this thread for more detail: [Issue 1190160: Programmatic access to window-name from chrome.windows extension API](https://bugs.chromium.org/p/chromium/issues/detail?id=1190160)~~
 * [X] label/highlight duplicated tabs
   * The background color of the tab changes from blue (2 duplicated), orange (3 duplicated), to red (4 duplicate or more)
+* [ ] quick comparison between the duplicated tabs
 * [ ] move tabs around within the tool
 * [ ] a global short-cut key
 * [ ] beatify the popup window
 
-* [ ] search for tabs (P2 as this is already embedded in chrome)
+* [ ] search for tabs (**P2** as this is already embedded in chrome)
 
 The extension does not collect any data. However, please use it with with your own responsibilities.
