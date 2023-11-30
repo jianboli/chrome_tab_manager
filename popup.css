@@ -34,10 +34,25 @@ button {
 
 /* Style for individual tab items */
 .tab-item {
-  margin-bottom: 5px;
-  padding: 5px;
-  background-color: #f0f0f0;
-  border-radius: 3px;
+    margin-bottom: 5px;
+    padding: 5px;  
+    border-radius: 3px;
+}
+
+.tab-item-dup1 {
+    background-color: #f0f0f0;
+}
+
+.tab-item-dup2 {
+    background-color: #2d81cf;
+}
+
+.tab-item-dup3 {
+    background-color: #e3b54b;
+}
+
+.tab-item-dup4 {
+    background-color: #e6675c; 
 }
 
 .tab-item a {

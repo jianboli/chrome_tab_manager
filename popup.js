@@ -61,12 +61,16 @@ function popup() {
             // Populate the list with tabs
             chrome.tabs.query({ windowId: window.id }, function (tabs) {
             var tabGroups = {};
-
+            var tabCounter = {};
             tabs.forEach(function (tab) {
                 if (!tabGroups[tab.groupId]) {
-                tabGroups[tab.groupId] = [];
+                    tabGroups[tab.groupId] = [];
                 }
                 tabGroups[tab.groupId].push(tab);
+                if (!tabCounter[tab.title]) {
+                    tabCounter[tab.title] = [];
+                }
+                tabCounter[tab.title].push(tab);
             });
 
             for (const groupId in tabGroups) {
@@ -91,10 +95,24 @@ function popup() {
                         const tabId =  tab.id;
                         const tabElement = document.createElement('li');
                         //tabElement.textContent = tab.url;
-                        tabElement.className = 'tab-item';
+                        
+                        //highlight the tabs with the same names
+                        if(!tabCounter[tab.title] || tabCounter[tab.title].length == 1) {
+                            tabElement.className = 'tab-item tab-item-dup1';
+                        } else if (tabCounter[tab.title].length == 2) {
+                            tabElement.className = 'tab-item tab-item-dup2';
+                        } else if (tabCounter[tab.title].length == 3) {
+                            tabElement.className = 'tab-item tab-item-dup3';
+                        } else {
+                            tabElement.className = 'tab-item tab-item-dup4';
+                        }
+                        
                         tabElement.textContent = tab.title;
                         tabElement.setAttribute('data-tab-id', tabId);
                         tabElement.addEventListener('click', function() {
+                            for (const tab1 of tabCounter[tab.title]) {
+                                switchTab(tab1.id);
+                            }
                             switchTab(tabId);
                         });
                         groupElement.appendChild(tabElement);
