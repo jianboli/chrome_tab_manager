@@ -81,6 +81,7 @@ function popup() {
         windows.forEach(function (window) {
             //Create a details element
             var windowCollapsible = document.createElement('details');
+            windowCollapsible.id = window.id;
             tabListContainer.append(windowCollapsible);
 
             // Create a collapsible heading for the window
@@ -88,6 +89,7 @@ function popup() {
             windowHeading.textContent = 'Window ' + window.id;
             windowHeading.className = "window-heading"
             windowCollapsible.appendChild(windowHeading);
+            
             
             // Create a div for each window
             var windowUl = document.createElement("ul");
@@ -116,10 +118,11 @@ function popup() {
                 //create group div
                 var groupDiv = document.createElement('details');
                 groupDiv.className = 'group';
+                groupDiv.id = window.id + "," + groupId;
 
                 // Create a heading for the groups
                 var groupHeading = document.createElement('summary');
-                groupHeading.textContent = 'Tab Group';
+                groupHeading.textContent = 'Ungrouped';
                 groupHeading.className = 'group-heading';
                 groupDiv.appendChild(groupHeading);
         
@@ -130,7 +133,6 @@ function popup() {
                 tabList.appendChild(groupElement);
                 groupDiv.appendChild(tabList);
                 grpList.appendChild(groupDiv);
-                //tabGroups.get is running async, let's update it instead of directly initialize it with correct titles 
                 update_group_info(groupHeading, groupId);
             }
             // Append the list to the window div
@@ -138,6 +140,20 @@ function popup() {
             });
         });
     });
+
+    //update the current window and current tab to expand it
+    chrome.windows.getCurrent({}, function (currentWindow) {
+        chrome.tabs.query({ active: true, windowId: currentWindow.id }, function (currentTabs) {
+            document.getElementById(currentWindow.id).setAttribute('open', true);
+            var currentWindowId = currentWindow.id;
+            if(currentTabs.length > 0) {
+                var groupId = currentTabs[0].groupId;
+                if(groupId != -1){ // not in a group
+                    document.getElementById(currentWindowId + "," + groupId).setAttribute('open', true);
+                }
+            }
+        });
+      });
 }
 
 function sortTabByNameWithinGroup() {

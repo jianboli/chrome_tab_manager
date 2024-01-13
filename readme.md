@@ -20,6 +20,8 @@ TODO:
 * [ ] quick comparison between the duplicated tabs
 * [X] sort the tabs by name, only for current window and the sorting is applied within tab groups
 * [X] collapse all the content to start with
+* [X] expand the current window and tab by default
+* [ ] close tabs from the plugin
 * [ ] move tabs around within the tool
 * [ ] a global short-cut key
 * [ ] beatify the popup window
