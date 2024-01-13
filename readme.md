@@ -18,6 +18,8 @@ TODO:
 * [X] label/highlight duplicated tabs
   * The background color of the tab changes from blue (2 duplicated), orange (3 duplicated), to red (4 duplicate or more)
 * [ ] quick comparison between the duplicated tabs
+* [X] sort the tabs by name, only for current window and the sorting is applied within tab groups
+* [X] collapse all the content to start with
 * [ ] move tabs around within the tool
 * [ ] a global short-cut key
 * [ ] beatify the popup window

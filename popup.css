@@ -16,11 +16,21 @@ button {
   padding: 10px;
 }
 
+/* Style for windows heading */
+.window-heading {
+    margin-top: 10px;
+    font-size: 16px;
+    padding-left: 10px;
+    background-color:darkgrey;
+    border-radius: 3px; /* Adjust the radius as needed */
+  }
+
 /* Style for tab groups */
 
 .group-heading {
   margin-top: 10px;
   font-size: 14px;
+  padding-left: 10px;
   color: #333;
   border-radius: 3px; /* Adjust the radius as needed */
 }

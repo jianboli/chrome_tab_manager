@@ -38,6 +38,40 @@ function update_group_info(groupElement, groupId)
     }
 }
 
+
+function displayGroup(tabGroups, groupId, tabCounter){
+    const groupElement = document.createElement('ul');
+                    
+    const tabGroupTabs = tabGroups[groupId];          
+    for (const tab of tabGroupTabs) {
+        const tabId =  tab.id;
+        const tabElement = document.createElement('li');
+        //tabElement.textContent = tab.url;
+        
+        //highlight the tabs with the same names
+        if(!tabCounter[tab.title] || tabCounter[tab.title].length == 1) {
+            tabElement.className = 'tab-item tab-item-dup1';
+        } else if (tabCounter[tab.title].length == 2) {
+            tabElement.className = 'tab-item tab-item-dup2';
+        } else if (tabCounter[tab.title].length == 3) {
+            tabElement.className = 'tab-item tab-item-dup3';
+        } else {
+            tabElement.className = 'tab-item tab-item-dup4';
+        }
+        
+        tabElement.textContent = tab.title;
+        tabElement.setAttribute('data-tab-id', tabId);
+        tabElement.addEventListener('click', function() {
+            for (const tab1 of tabCounter[tab.title]) {
+                switchTab(tab1.id);
+            }
+            switchTab(tabId);
+        });
+        groupElement.appendChild(tabElement);
+    }
+    return groupElement;
+}
+
 function popup() {
     // Get all windows
     chrome.windows.getAll({ populate: true }, function (windows) {
@@ -45,14 +79,19 @@ function popup() {
 
         let tabIdCounter = 0;
         windows.forEach(function (window) {
-            // Create a div for each window
-            var windowDiv = document.createElement('div');
-            windowDiv.className = 'window';
+            //Create a details element
+            var windowCollapsible = document.createElement('details');
+            tabListContainer.append(windowCollapsible);
 
-            // Create a heading for the window
-            var windowHeading = document.createElement('h2');
+            // Create a collapsible heading for the window
+            var windowHeading = document.createElement('summary');
             windowHeading.textContent = 'Window ' + window.id;
-            windowDiv.appendChild(windowHeading);
+            windowHeading.className = "window-heading"
+            windowCollapsible.appendChild(windowHeading);
+            
+            // Create a div for each window
+            var windowUl = document.createElement("ul");
+            windowCollapsible.appendChild(windowUl)
 
             // Create a list for each window
             var grpList = document.createElement('div');
@@ -74,70 +113,87 @@ function popup() {
             });
 
             for (const groupId in tabGroups) {
+                //create group div
+                var groupDiv = document.createElement('details');
+                groupDiv.className = 'group';
 
-                    //create group div
-                    var groupDiv = document.createElement('div');
-                    groupDiv.className = 'group';
-            
-                    // Create a heading for the groups
-                    var groupHeading = document.createElement('h3');
-                    groupHeading.textContent = 'Tab Group';
-                    groupHeading.className = 'group-heading';
-                    groupDiv.appendChild(groupHeading);
-            
-                    // Create a list for each group
-                    var tabList = document.createElement('div');
-                    tabList.className = 'tab-list'; 
-                    const groupElement = document.createElement('ul');
-                    
-                    const tabGroupTabs = tabGroups[groupId];          
-                    for (const tab of tabGroupTabs) {
-                        const tabId =  tab.id;
-                        const tabElement = document.createElement('li');
-                        //tabElement.textContent = tab.url;
-                        
-                        //highlight the tabs with the same names
-                        if(!tabCounter[tab.title] || tabCounter[tab.title].length == 1) {
-                            tabElement.className = 'tab-item tab-item-dup1';
-                        } else if (tabCounter[tab.title].length == 2) {
-                            tabElement.className = 'tab-item tab-item-dup2';
-                        } else if (tabCounter[tab.title].length == 3) {
-                            tabElement.className = 'tab-item tab-item-dup3';
-                        } else {
-                            tabElement.className = 'tab-item tab-item-dup4';
-                        }
-                        
-                        tabElement.textContent = tab.title;
-                        tabElement.setAttribute('data-tab-id', tabId);
-                        tabElement.addEventListener('click', function() {
-                            for (const tab1 of tabCounter[tab.title]) {
-                                switchTab(tab1.id);
-                            }
-                            switchTab(tabId);
-                        });
-                        groupElement.appendChild(tabElement);
-                    }
-                    tabList.appendChild(groupElement);
-                    groupDiv.appendChild(tabList);
-                    grpList.appendChild(groupDiv);
-                    //tabGroups.get is running async, let's update it instead of directly initialize it with correct titles 
-                    update_group_info(groupHeading, groupId);
+                // Create a heading for the groups
+                var groupHeading = document.createElement('summary');
+                groupHeading.textContent = 'Tab Group';
+                groupHeading.className = 'group-heading';
+                groupDiv.appendChild(groupHeading);
+        
+                // Create a list for each group
+                var tabList = document.createElement('div');
+                tabList.className = 'tab-list'; 
+                groupElement = displayGroup(tabGroups, groupId, tabCounter);
+                tabList.appendChild(groupElement);
+                groupDiv.appendChild(tabList);
+                grpList.appendChild(groupDiv);
+                //tabGroups.get is running async, let's update it instead of directly initialize it with correct titles 
+                update_group_info(groupHeading, groupId);
             }
             // Append the list to the window div
-            windowDiv.appendChild(grpList);
-
-            // Append the window div to the popup body
-            tabListContainer.appendChild(windowDiv);
+            windowUl.appendChild(grpList);
             });
         });
     });
 }
 
+function sortTabByNameWithinGroup() {
+  // Get all open tabs
+  chrome.tabs.query({currentWindow: true}, function (tabs) {
+    // Group tabs by their group ID
+    var groupedTabs = tabs.reduce(function (groups, tab) {
+      var groupId = tab.groupId || 'ungrouped';
+      groups[groupId] = groups[groupId] || [];
+      groups[groupId].push(tab);
+      return groups;
+    }, {});
+
+    // Sort tabs within each group by title
+    Object.keys(groupedTabs).forEach(function (groupId) {
+      groupedTabs[groupId].sort(function (a, b) {
+        var titleA = a.title.toLowerCase();
+        var titleB = b.title.toLowerCase();
+        return titleA.localeCompare(titleB);
+      });
+
+      // Move tabs to their new positions within the group
+      groupedTabs[groupId].forEach(function (tab, index) {
+        chrome.tabs.move(tab.id, { index: index });
+      });
+    });
+  });
+}
+
+// Button event handlers
 document.getElementById('refreshBtn').addEventListener('click', function() {
     document.getElementById('tabList').innerHTML = '';
     popup();
   });
   
+document.getElementById('sortBtn').addEventListener('click', function() {
+    document.getElementById('tabList').innerHTML = '';
+    sortTabByNameWithinGroup();
+    popup();
+});
+
+document.getElementById('expandBtn').addEventListener('click', function() {
+    var detailsElements = document.querySelectorAll('details');
+    detailsElements.forEach(function(details) {
+        details.setAttribute('open', true);
+    });
+});
+
+document.getElementById('collapsBtn').addEventListener('click', function() {
+    var detailsElements = document.querySelectorAll('details');
+    detailsElements.forEach(function(details) {
+      details.removeAttribute('open');
+    });
+});
+
+
 
 function switchTab(tabId) {
     chrome.tabs.get(tabId, function(tab) {
