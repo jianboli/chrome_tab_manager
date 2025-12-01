@@ -1,75 +1,242 @@
+:root {
+  --primary-color: #007bff;
+  --primary-hover: #0056b3;
+  --bg-color: #f8f9fa;
+  --text-color: #333;
+  --border-color: #dee2e6;
+  --window-bg: #ffffff;
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+}
+
 body {
-  width: 500px;
-  padding: 10px;
+  width: 400px;
+  margin: 0;
+  padding: 15px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-size: 14px;
+}
+
+h1 {
+  margin: 0 0 15px 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+  color: #2c3e50;
+}
+
+/* Controls Container */
+.controls {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
 }
 
 button {
-  margin-top: 10px;
-  padding: 5px 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  background-color: white;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  color: #495057;
+  box-shadow: var(--shadow-sm);
 }
 
-/* Style for windows */
-.window {
-  margin-bottom: 20px;
-  border: 1px solid #ddd;
+button:hover {
+  background-color: #e9ecef;
+  border-color: #cbd3da;
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Tab List Container */
+#tabList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Windows Styles */
+details {
+  background-color: var(--window-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+summary {
+  padding: 10px 15px;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 600;
+  background-color: #fff;
+  transition: background-color 0.2s;
+  list-style: none; /* Hide default marker */
+  display: flex;
+  align-items: center;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+summary::before {
+  content: '▶';
+  font-size: 10px;
+  margin-right: 10px;
+  transition: transform 0.2s;
+  color: #6c757d;
+  flex-shrink: 0;
+}
+
+details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+details[open] > summary {
+  border-bottom: 1px solid var(--border-color);
+  background-color: #fcfcfc;
+}
+
+/* Window Heading specific */
+.window-heading {
+  font-size: 14px;
+  color: #2c3e50;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box; /* Ensure padding is included in width */
+  padding-right: 10px; /* Add some right padding for the button */
+}
+
+.window-title-text {
+  flex: 1; /* Take up remaining space */
+  min-width: 0; /* Allow shrinking below content size */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 8px;
+}
+
+.edit-window-btn {
+  opacity: 0;
+  transition: opacity 0.2s;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #6c757d;
+  box-shadow: none;
+  flex-shrink: 0; /* Prevent button from shrinking */
+  width: 24px; /* Fixed width */
+  height: 24px; /* Fixed height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.window-heading:hover .edit-window-btn {
+  opacity: 1;
+}
+
+.edit-window-btn:hover {
+  color: var(--primary-color);
+  background: none;
+  transform: none;
+}
+
+.window-name-input {
+  font-size: 14px;
+  padding: 4px 8px;
+  border: 1px solid var(--primary-color);
+  border-radius: 4px;
+  width: 150px;
+  outline: none;
+}
+
+/* Groups Layout */
+.grp-list {
   padding: 10px;
 }
 
-/* Style for windows heading */
-.window-heading {
-    margin-top: 10px;
-    font-size: 16px;
-    padding-left: 10px;
-    background-color:darkgrey;
-    border-radius: 3px; /* Adjust the radius as needed */
-  }
-
-/* Style for tab groups */
+/* Nested Details for Groups */
+.group {
+  margin-bottom: 8px;
+  border: 1px solid #edf2f7;
+  border-radius: 6px;
+  box-shadow: none; /* Remove shadow from nested details */
+}
 
 .group-heading {
-  margin-top: 10px;
-  font-size: 14px;
-  padding-left: 10px;
-  color: #333;
-  border-radius: 3px; /* Adjust the radius as needed */
+  font-size: 13px;
+  padding: 8px 12px;
+  background-color: #f8f9fa;
 }
 
-/* Style for tab lists */
+/* Tab List inside groups */
 .tab-list {
-    margin-bottom: 20px;
-    border: 1px solid #ddd;
-    padding: 1px;
+  padding: 5px;
+  margin: 0;
+  border: none;
 }
 
-/* Style for individual tab items */
+/* Individual Tab Items */
+ul { /* Reset default ul padding for dynamic elements */
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
 .tab-item {
-    margin-bottom: 5px;
-    padding: 5px;  
-    border-radius: 3px;
-}
-
-.tab-item-dup1 {
-    background-color: #f0f0f0;
-}
-
-.tab-item-dup2 {
-    background-color: #2d81cf;
-}
-
-.tab-item-dup3 {
-    background-color: #e3b54b;
-}
-
-.tab-item-dup4 {
-    background-color: #e6675c; 
-}
-
-.tab-item a {
-  text-decoration: none;
-  color: #333;
+  padding: 8px 12px;
+  margin: 2px 0;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+  transition: background-color 0.15s;
+  border-left: 3px solid transparent;
 }
 
 .tab-item:hover {
-  background-color: #e0e0e0;
+  background-color: #eef2f7;
+  border-left-color: var(--primary-color);
+}
+
+/* Duplicate coloring - refined */
+.tab-item-dup1 { border-left-color: #6c757d; } /* Neutral */
+.tab-item-dup2 { border-left-color: #007bff; background-color: rgba(0, 123, 255, 0.05); } /* Blue */
+.tab-item-dup3 { border-left-color: #ffc107; background-color: rgba(255, 193, 7, 0.05); } /* Yellow */
+.tab-item-dup4 { border-left-color: #dc3545; background-color: rgba(220, 53, 69, 0.05); } /* Red */
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #bbb;
 }
