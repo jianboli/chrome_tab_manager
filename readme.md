@@ -1,4 +1,4 @@
-# Another chrome tab manager extension 
+# Another chrome tab manager extension
 
 Currently, it can only list the existing chrome tabs grouped by window and tab groups.
 To test it, clone the extension to local and do the following:
@@ -24,7 +24,7 @@ TODO:
 * [ ] close tabs from the plugin
 * [ ] move tabs around within the tool
 * [ ] a global short-cut key
-* [ ] beatify the popup window
+* [x] beatify the popup window
 
 * [ ] search for tabs (**P2** as this is already embedded in chrome)
 

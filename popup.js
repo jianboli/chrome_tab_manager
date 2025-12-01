@@ -73,87 +73,159 @@ function displayGroup(tabGroups, groupId, tabCounter){
 }
 
 function popup() {
-    // Get all windows
-    chrome.windows.getAll({ populate: true }, function (windows) {
-        var tabListContainer = document.getElementById('tabList');
+    // Get saved window names first
+    chrome.storage.local.get(['windowNames'], function(result) {
+        const windowNames = result.windowNames || {};
 
-        let tabIdCounter = 0;
-        windows.forEach(function (window) {
-            //Create a details element
-            var windowCollapsible = document.createElement('details');
-            windowCollapsible.id = window.id;
-            tabListContainer.append(windowCollapsible);
+        // Get all windows
+        chrome.windows.getAll({ populate: true }, function (windows) {
+            var tabListContainer = document.getElementById('tabList');
 
-            // Create a collapsible heading for the window
-            var windowHeading = document.createElement('summary');
-            windowHeading.textContent = 'Window ' + window.id;
-            windowHeading.className = "window-heading"
-            windowCollapsible.appendChild(windowHeading);
+            windows.forEach(function (window) {
+                //Create a details element
+                var windowCollapsible = document.createElement('details');
+                windowCollapsible.id = window.id;
+                tabListContainer.append(windowCollapsible);
+
+                // Create a collapsible heading for the window
+                var windowHeading = document.createElement('summary');
+                windowHeading.className = "window-heading";
+
+                // Create title text span
+                var titleSpan = document.createElement('span');
+                titleSpan.className = 'window-title-text';
+                var savedName = windowNames[window.id];
+                titleSpan.textContent = savedName ? savedName : 'Window ' + window.id;
+                windowHeading.appendChild(titleSpan);
+
+                // Create edit button
+                var editBtn = document.createElement('button');
+                editBtn.className = 'edit-window-btn';
+                editBtn.innerHTML = '✎'; // Edit icon
+                editBtn.title = 'Rename Window';
+
+                // Edit button event listener
+                editBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation(); // Prevent toggling details
+
+                    // Switch to edit mode
+                    var input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'window-name-input';
+                    input.value = titleSpan.textContent;
+
+                    // Replace span with input
+                    titleSpan.replaceWith(input);
+                    editBtn.style.display = 'none';
+                    input.focus();
+
+                    // Save function
+                    function saveName() {
+                        var newName = input.value.trim();
+                        if (newName) {
+                            windowNames[window.id] = newName;
+                        } else {
+                            delete windowNames[window.id];
+                            newName = 'Window ' + window.id;
+                        }
+
+                        // Update storage
+                        chrome.storage.local.set({ windowNames: windowNames }, function() {
+                            // Revert to text
+                            titleSpan.textContent = newName;
+                            input.replaceWith(titleSpan);
+                            editBtn.style.display = '';
+                        });
+                    }
+
+                    // Handle save on enter or blur
+                    input.addEventListener('keydown', function(keyEvent) {
+                        if (keyEvent.key === 'Enter') {
+                            saveName();
+                        }
+                    });
+
+                    input.addEventListener('blur', saveName);
+
+                    // Prevent click on input from toggling details
+                    input.addEventListener('click', function(inputEvent) {
+                        inputEvent.preventDefault();
+                        inputEvent.stopPropagation();
+                    });
+                });
+
+                windowHeading.appendChild(editBtn);
+                windowCollapsible.appendChild(windowHeading);
 
 
-            // Create a div for each window
-            var windowUl = document.createElement("ul");
-            windowCollapsible.appendChild(windowUl)
+                // Create a div for each window
+                var windowUl = document.createElement("ul");
+                windowCollapsible.appendChild(windowUl)
 
-            // Create a list for each window
-            var grpList = document.createElement('div');
-            grpList.className = 'grp-list';
+                // Create a list for each window
+                var grpList = document.createElement('div');
+                grpList.className = 'grp-list';
 
-            // Populate the list with tabs
-            chrome.tabs.query({ windowId: window.id }, function (tabs) {
-            var tabGroups = {};
-            var tabCounter = {};
-            tabs.forEach(function (tab) {
-                if (!tabGroups[tab.groupId]) {
-                    tabGroups[tab.groupId] = [];
+                // Populate the list with tabs
+                chrome.tabs.query({ windowId: window.id }, function (tabs) {
+                var tabGroups = {};
+                var tabCounter = {};
+                tabs.forEach(function (tab) {
+                    if (!tabGroups[tab.groupId]) {
+                        tabGroups[tab.groupId] = [];
+                    }
+                    tabGroups[tab.groupId].push(tab);
+                    if (!tabCounter[tab.title]) {
+                        tabCounter[tab.title] = [];
+                    }
+                    tabCounter[tab.title].push(tab);
+                });
+
+                for (const groupId in tabGroups) {
+                    //create group div
+                    var groupDiv = document.createElement('details');
+                    groupDiv.className = 'group';
+                    groupDiv.id = window.id + "," + groupId;
+
+                    // Create a heading for the groups
+                    var groupHeading = document.createElement('summary');
+                    groupHeading.textContent = 'Ungrouped';
+                    groupHeading.className = 'group-heading';
+                    groupDiv.appendChild(groupHeading);
+
+                    // Create a list for each group
+                    var tabList = document.createElement('div');
+                    tabList.className = 'tab-list';
+                    groupElement = displayGroup(tabGroups, groupId, tabCounter);
+                    tabList.appendChild(groupElement);
+                    groupDiv.appendChild(tabList);
+                    grpList.appendChild(groupDiv);
+                    update_group_info(groupHeading, groupId);
                 }
-                tabGroups[tab.groupId].push(tab);
-                if (!tabCounter[tab.title]) {
-                    tabCounter[tab.title] = [];
-                }
-                tabCounter[tab.title].push(tab);
+                // Append the list to the window div
+                windowUl.appendChild(grpList);
+                });
             });
+        });
 
-            for (const groupId in tabGroups) {
-                //create group div
-                var groupDiv = document.createElement('details');
-                groupDiv.className = 'group';
-                groupDiv.id = window.id + "," + groupId;
+        //update the current window and current tab to expand it
+        chrome.windows.getCurrent({}, function (currentWindow) {
+            chrome.tabs.query({ active: true, windowId: currentWindow.id }, function (currentTabs) {
+                var winEl = document.getElementById(currentWindow.id);
+                if(winEl) winEl.setAttribute('open', true);
 
-                // Create a heading for the groups
-                var groupHeading = document.createElement('summary');
-                groupHeading.textContent = 'Ungrouped';
-                groupHeading.className = 'group-heading';
-                groupDiv.appendChild(groupHeading);
-
-                // Create a list for each group
-                var tabList = document.createElement('div');
-                tabList.className = 'tab-list';
-                groupElement = displayGroup(tabGroups, groupId, tabCounter);
-                tabList.appendChild(groupElement);
-                groupDiv.appendChild(tabList);
-                grpList.appendChild(groupDiv);
-                update_group_info(groupHeading, groupId);
-            }
-            // Append the list to the window div
-            windowUl.appendChild(grpList);
+                var currentWindowId = currentWindow.id;
+                if(currentTabs.length > 0) {
+                    var groupId = currentTabs[0].groupId;
+                    if(groupId != -1){ // not in a group
+                        var groupEl = document.getElementById(currentWindowId + "," + groupId);
+                        if(groupEl) groupEl.setAttribute('open', true);
+                    }
+                }
             });
         });
     });
-
-    //update the current window and current tab to expand it
-    chrome.windows.getCurrent({}, function (currentWindow) {
-        chrome.tabs.query({ active: true, windowId: currentWindow.id }, function (currentTabs) {
-            document.getElementById(currentWindow.id).setAttribute('open', true);
-            var currentWindowId = currentWindow.id;
-            if(currentTabs.length > 0) {
-                var groupId = currentTabs[0].groupId;
-                if(groupId != -1){ // not in a group
-                    document.getElementById(currentWindowId + "," + groupId).setAttribute('open', true);
-                }
-            }
-        });
-      });
 }
 
 async function sortTabByNameWithinGroup() {
@@ -215,7 +287,7 @@ document.getElementById('expandBtn').addEventListener('click', function() {
     });
 });
 
-document.getElementById('collapsBtn').addEventListener('click', function() {
+document.getElementById('collapseBtn').addEventListener('click', function() {
     var detailsElements = document.querySelectorAll('details');
     detailsElements.forEach(function(details) {
       details.removeAttribute('open');
