@@ -1,6 +1,15 @@
 # Another chrome tab manager extension
 
-Currently, it can only list the existing chrome tabs grouped by window and tab groups.
+Here is an chrome tab manager extension. It has the following functionailities:
+* List the existing chrome tabs grouped by window and tab groups.
+* Sort the tabs by name so that similar tabs by name are be placed together and easier to identify - this sorting respect the tabs and will only sort within tabs
+* Duplicated tabs (by tab name) are highlighted
+* Name/Rename an window that survives through chrome restarts
+
+<img width="437" height="375" alt="Screenshot 2025-12-01 at 2 43 45 PM" src="https://github.com/user-attachments/assets/503599fb-b1dd-4eca-b6cd-4a6df39fcd68" />
+
+
+# Installation
 To test it, clone the extension to local and do the following:
 
 * Load the Extension:
@@ -9,8 +18,7 @@ Open Chrome and go to chrome://extensions/. Enable "Developer mode" and click on
 * Test the Extension:
 Click on the extension icon in the Chrome toolbar to see your popup. You can click the "Refresh" button to test the functionality.
 
-TODO:
-
+# TODO:
 * [X] make the tab item clickable: currently, this function is coded but it does not work
 * [X] make the tab group and window name more readable
   * [X] Make the tab group name more readable
