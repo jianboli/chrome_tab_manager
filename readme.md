@@ -24,8 +24,9 @@ TODO:
 * [ ] close tabs from the plugin
 * [ ] move tabs around within the tool
 * [ ] a global short-cut key
-* [x] beatify the popup window
+* [X] beatify the popup window
+* [X] naming a window
 
-* [ ] search for tabs (**P2** as this is already embedded in chrome)
+* [-] search for tabs (**P2** as this is already embedded in chrome)
 
 The extension does not collect any data. However, please use it with with your own responsibilities.
