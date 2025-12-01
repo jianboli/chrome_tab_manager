@@ -9,27 +9,27 @@ function getContrastColor(colorName) {
 
     // Remove the dummy element
     document.body.removeChild(dummyElement);
-  
+
     // Extract RGB values
     var match = computedColor.match(/\d+/g);
     var r = parseInt(match[0], 10);
     var g = parseInt(match[1], 10);
     var b = parseInt(match[2], 10);
-  
+
     // Calculate luminance
     var luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  
+
     // Choose black or white based on luminance
     return luminance > 0.6 ? 'black' : 'white';
   }
-  
+
 
 function update_group_info(groupElement, groupId)
 {
     const groupIDInt = parseInt(groupId);
     if (groupIDInt > 0){
-        const tabGroup = chrome.tabGroups.get(groupIDInt, 
-            function(grp) { 
+        const tabGroup = chrome.tabGroups.get(groupIDInt,
+            function(grp) {
                 groupElement.textContent = grp.title;
                 var grpColor = grp.color;
                 groupElement.style.backgroundColor = grpColor;
@@ -41,13 +41,13 @@ function update_group_info(groupElement, groupId)
 
 function displayGroup(tabGroups, groupId, tabCounter){
     const groupElement = document.createElement('ul');
-                    
-    const tabGroupTabs = tabGroups[groupId];          
+
+    const tabGroupTabs = tabGroups[groupId];
     for (const tab of tabGroupTabs) {
         const tabId =  tab.id;
         const tabElement = document.createElement('li');
         //tabElement.textContent = tab.url;
-        
+
         //highlight the tabs with the same names
         if(!tabCounter[tab.title] || tabCounter[tab.title].length == 1) {
             tabElement.className = 'tab-item tab-item-dup1';
@@ -58,7 +58,7 @@ function displayGroup(tabGroups, groupId, tabCounter){
         } else {
             tabElement.className = 'tab-item tab-item-dup4';
         }
-        
+
         tabElement.textContent = tab.title;
         tabElement.setAttribute('data-tab-id', tabId);
         tabElement.addEventListener('click', function() {
@@ -89,8 +89,8 @@ function popup() {
             windowHeading.textContent = 'Window ' + window.id;
             windowHeading.className = "window-heading"
             windowCollapsible.appendChild(windowHeading);
-            
-            
+
+
             // Create a div for each window
             var windowUl = document.createElement("ul");
             windowCollapsible.appendChild(windowUl)
@@ -125,10 +125,10 @@ function popup() {
                 groupHeading.textContent = 'Ungrouped';
                 groupHeading.className = 'group-heading';
                 groupDiv.appendChild(groupHeading);
-        
+
                 // Create a list for each group
                 var tabList = document.createElement('div');
-                tabList.className = 'tab-list'; 
+                tabList.className = 'tab-list';
                 groupElement = displayGroup(tabGroups, groupId, tabCounter);
                 tabList.appendChild(groupElement);
                 groupDiv.appendChild(tabList);
@@ -156,31 +156,44 @@ function popup() {
       });
 }
 
-function sortTabByNameWithinGroup() {
-  // Get all open tabs
-  chrome.tabs.query({currentWindow: true}, function (tabs) {
-    // Group tabs by their group ID
-    var groupedTabs = tabs.reduce(function (groups, tab) {
-      var groupId = tab.groupId || 'ungrouped';
-      groups[groupId] = groups[groupId] || [];
-      groups[groupId].push(tab);
-      return groups;
-    }, {});
+async function sortTabByNameWithinGroup() {
+  // Get all open tabs in the current window
+  const tabs = await chrome.tabs.query({ currentWindow: true });
 
-    // Sort tabs within each group by title
-    Object.keys(groupedTabs).forEach(function (groupId) {
-      groupedTabs[groupId].sort(function (a, b) {
-        var titleA = a.title.toLowerCase();
-        var titleB = b.title.toLowerCase();
-        return titleA.localeCompare(titleB);
-      });
+  // 1. Chunk tabs based on visual grouping (Pinned vs Unpinned, Group ID)
+  // This preserves the order of groups in the window
+  const chunks = [];
+  if (tabs.length > 0) {
+    let currentChunk = [tabs[0]];
+    for (let i = 1; i < tabs.length; i++) {
+      const prev = tabs[i - 1];
+      const curr = tabs[i];
 
-      // Move tabs to their new positions within the group
-      groupedTabs[groupId].forEach(function (tab, index) {
-        chrome.tabs.move(tab.id, { index: index });
-      });
-    });
+      // Start a new chunk if pinned status changes or group ID changes
+      if (prev.pinned !== curr.pinned || prev.groupId !== curr.groupId) {
+        chunks.push(currentChunk);
+        currentChunk = [];
+      }
+      currentChunk.push(curr);
+    }
+    chunks.push(currentChunk);
+  }
+
+  // 2. Sort tabs within each chunk by title
+  chunks.forEach(chunk => {
+    chunk.sort((a, b) => a.title.localeCompare(b.title));
   });
+
+  // 3. Move tabs to their new positions
+  // We move chunk by chunk to reconstruct the window order
+  let currentIndex = 0;
+  for (const chunk of chunks) {
+    const tabIds = chunk.map(t => t.id);
+    if (tabIds.length > 0) {
+      await chrome.tabs.move(tabIds, { index: currentIndex });
+      currentIndex += tabIds.length;
+    }
+  }
 }
 
 // Button event handlers
@@ -188,10 +201,10 @@ document.getElementById('refreshBtn').addEventListener('click', function() {
     document.getElementById('tabList').innerHTML = '';
     popup();
   });
-  
-document.getElementById('sortBtn').addEventListener('click', function() {
+
+document.getElementById('sortBtn').addEventListener('click', async function() {
     document.getElementById('tabList').innerHTML = '';
-    sortTabByNameWithinGroup();
+    await sortTabByNameWithinGroup();
     popup();
 });
 
@@ -216,7 +229,7 @@ function switchTab(tabId) {
         var windowId = tab.windowId;
         chrome.windows.update(windowId, { focused: true }, function () {
         });
-    });  
+    });
     // Focus on the specified tab within the window
     chrome.tabs.update(tabId, { active: true });
 }
