@@ -1,26 +1,43 @@
+// Precomputed contrast for the fixed set of Chrome tab-group color names.
+// Avoids per-call DOM creation + forced synchronous layout in getContrastColor.
+const CONTRAST_COLOR_MAP = {
+    grey:   'white',
+    blue:   'white',
+    red:    'white',
+    yellow: 'black',
+    green:  'white',
+    pink:   'black',
+    purple: 'white',
+    cyan:   'black',
+    orange: 'black',
+};
+
+// Memoize any color name we haven't precomputed so we only pay the DOM cost once.
+const contrastColorCache = {};
+
 function getContrastColor(colorName) {
-    // Create a dummy element to get the computed style
+    const precomputed = CONTRAST_COLOR_MAP[colorName];
+    if (precomputed) return precomputed;
+    if (contrastColorCache[colorName]) return contrastColorCache[colorName];
+
+    // Fallback: resolve the color via the browser for names we don't know.
     var dummyElement = document.createElement('div');
     dummyElement.style.color = colorName;
     document.body.appendChild(dummyElement);
 
-    // Get the computed style
     var computedColor = window.getComputedStyle(dummyElement).color;
-
-    // Remove the dummy element
     document.body.removeChild(dummyElement);
 
-    // Extract RGB values
     var match = computedColor.match(/\d+/g);
     var r = parseInt(match[0], 10);
     var g = parseInt(match[1], 10);
     var b = parseInt(match[2], 10);
 
-    // Calculate luminance
     var luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    var result = luminance > 0.6 ? 'black' : 'white';
 
-    // Choose black or white based on luminance
-    return luminance > 0.6 ? 'black' : 'white';
+    contrastColorCache[colorName] = result;
+    return result;
   }
 
 
