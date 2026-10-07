@@ -167,8 +167,12 @@ function popup() {
                 var grpList = document.createElement('div');
                 grpList.className = 'grp-list';
 
-                // Populate the list with tabs
-                chrome.tabs.query({ windowId: window.id }, function (tabs) {
+                // Populate the list with tabs.
+                // `window.tabs` is already populated by the surrounding
+                // chrome.windows.getAll({ populate: true }) call above, so
+                // there's no need for a second chrome.tabs.query round trip
+                // per window.
+                var tabs = window.tabs;
                 var tabGroups = {};
                 var tabCounter = {};
                 tabs.forEach(function (tab) {
@@ -205,7 +209,6 @@ function popup() {
                 }
                 // Append the list to the window div
                 windowUl.appendChild(grpList);
-                });
             });
         });
 
